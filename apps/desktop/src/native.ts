@@ -36,6 +36,7 @@ export interface NativePullStatus {
 }
 
 const SETTINGS_KEY = "kalam.desktop.settings";
+const LAUNCH_AT_LOGIN_KEY = "kalam.desktop.launchAtLogin";
 
 export async function loadDesktopSettings(): Promise<DesktopSettings> {
   const native = await invokeIfAvailable<NativeSettingsPayload>("settings_get");
@@ -121,6 +122,19 @@ export async function pasteNativeText(text: string): Promise<string> {
     // Clipboard access may be unavailable in browser smoke tests.
   }
   return text;
+}
+
+export async function loadLaunchAtLogin(): Promise<boolean> {
+  const native = await invokeIfAvailable<boolean>("launch_at_login_get");
+  if (native !== undefined) return native;
+  return localStorage.getItem(LAUNCH_AT_LOGIN_KEY) === "true";
+}
+
+export async function saveLaunchAtLogin(enabled: boolean): Promise<boolean> {
+  const native = await invokeIfAvailable<boolean>("launch_at_login_set", { enabled });
+  const saved = native ?? enabled;
+  if (native === undefined) localStorage.setItem(LAUNCH_AT_LOGIN_KEY, String(saved));
+  return saved;
 }
 
 export function listenForNativeCaptureHud(callback: () => void): () => void {

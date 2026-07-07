@@ -1,6 +1,7 @@
 mod capture;
 mod commands;
 mod ollama;
+mod startup;
 mod store;
 mod tray;
 
@@ -13,6 +14,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::capture_selection,
             commands::paste_text,
+            commands::launch_at_login_get,
+            commands::launch_at_login_set,
             commands::list_ollama_models,
             commands::pull_ollama_model,
             commands::grammar_deep_check,

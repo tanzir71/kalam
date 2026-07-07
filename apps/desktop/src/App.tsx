@@ -9,7 +9,8 @@ import {
   SelectField,
   ApiKeyField,
   Button,
-  BrandMark
+  BrandMark,
+  Toggle
 } from "@kalam/ui";
 import {
   HarperEngine,
@@ -27,9 +28,11 @@ import {
   captureNativeSelection,
   listNativeModels,
   listenForNativeCaptureHud,
+  loadLaunchAtLogin,
   loadDesktopSettings,
   pasteNativeText,
   pullNativeModel,
+  saveLaunchAtLogin,
   saveDesktopSettings,
   type NativeModel
 } from "./native";
@@ -391,15 +394,17 @@ function SettingsView() {
   const [backend, setBackend] = useState<"noai" | "local" | "cloud">("noai");
   const [provider, setProvider] = useState("openai");
   const [apiKey, setApiKey] = useState("");
+  const [launchAtLogin, setLaunchAtLogin] = useState(false);
   const [status, setStatus] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    void loadDesktopSettings().then((settings) => {
+    void Promise.all([loadDesktopSettings(), loadLaunchAtLogin()]).then(([settings, launchEnabled]) => {
       if (cancelled) return;
       setBackend(settings.backend);
       setProvider(settings.provider);
       setApiKey(settings.apiKey);
+      setLaunchAtLogin(launchEnabled);
     });
     return () => {
       cancelled = true;
@@ -417,6 +422,13 @@ function SettingsView() {
     setProvider(saved.provider);
     setApiKey(saved.apiKey);
     setStatus("Settings saved");
+  }
+
+  async function updateLaunchAtLogin(enabled: boolean) {
+    setLaunchAtLogin(enabled);
+    const saved = await saveLaunchAtLogin(enabled);
+    setLaunchAtLogin(saved);
+    setStatus(saved ? "Launch at login enabled" : "Launch at login disabled");
   }
 
   return (
@@ -441,6 +453,7 @@ function SettingsView() {
         onChange={setProvider}
       />
       <ApiKeyField value={apiKey} onChange={setApiKey} storageLabel="stored in your OS keychain" />
+      <Toggle label="Launch at login" checked={launchAtLogin} onChange={updateLaunchAtLogin} />
       <Button variant="primary" onClick={saveSettings}>
         Save settings
       </Button>

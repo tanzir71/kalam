@@ -41,6 +41,16 @@ pub fn paste_text(text: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn launch_at_login_get() -> Result<bool, String> {
+    Ok(crate::startup::launch_at_login_enabled())
+}
+
+#[tauri::command]
+pub fn launch_at_login_set(enabled: bool) -> Result<bool, String> {
+    crate::startup::set_launch_at_login(enabled)
+}
+
+#[tauri::command]
 pub fn list_ollama_models() -> Result<Vec<OllamaModel>, String> {
     Ok(crate::ollama::list_ollama_models())
 }

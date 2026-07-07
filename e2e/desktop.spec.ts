@@ -37,3 +37,10 @@ test("desktop capture HUD exposes clipboard-assisted actions", async ({ page }) 
   await expect(page.getByRole("button", { name: "Copy result" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Paste back" })).toBeVisible();
 });
+
+test("desktop settings exposes launch at login preference", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await expect(page.getByLabel("Launch at login")).toBeVisible();
+});
