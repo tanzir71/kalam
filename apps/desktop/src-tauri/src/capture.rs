@@ -1,12 +1,17 @@
 use std::io::Write;
 use std::process::{Command, Stdio};
+use std::sync::Mutex;
 use std::time::Duration;
+
+#[cfg(target_os = "windows")]
+static LAST_TARGET_HWND: Mutex<Option<isize>> = Mutex::new(None);
 
 pub fn capture_selection_fallback() -> String {
     if let Some(path) = test_clipboard_path() {
         return std::fs::read_to_string(path).unwrap_or_default();
     }
 
+    remember_foreground_window();
     let _ = request_foreground_copy();
     std::thread::sleep(Duration::from_millis(120));
     read_clipboard().unwrap_or_default()
@@ -19,6 +24,7 @@ pub fn paste_text_fallback(text: String) -> String {
     }
 
     let _ = write_clipboard(&text);
+    let _ = request_last_target_paste();
     text
 }
 
@@ -40,20 +46,58 @@ fn read_clipboard() -> Option<String> {
 
 #[cfg(target_os = "windows")]
 fn request_foreground_copy() -> Option<()> {
+    send_keys("^c")
+}
+
+#[cfg(not(target_os = "windows"))]
+fn request_foreground_copy() -> Option<()> {
+    None
+}
+
+#[cfg(target_os = "windows")]
+fn request_last_target_paste() -> Option<()> {
+    focus_last_target_window()?;
+    std::thread::sleep(Duration::from_millis(120));
+    send_keys("^v")
+}
+
+#[cfg(not(target_os = "windows"))]
+fn request_last_target_paste() -> Option<()> {
+    None
+}
+
+#[cfg(target_os = "windows")]
+fn send_keys(keys: &str) -> Option<()> {
     let status = Command::new("powershell")
         .args([
             "-NoProfile",
             "-Command",
-            "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^c')",
+            &format!("Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{}')", keys),
         ])
         .status()
         .ok()?;
     status.success().then_some(())
 }
 
+#[cfg(target_os = "windows")]
+fn remember_foreground_window() {
+    let hwnd = unsafe { GetForegroundWindow() };
+    if hwnd.is_null() {
+        return;
+    }
+    if let Ok(mut target) = LAST_TARGET_HWND.lock() {
+        *target = Some(hwnd as isize);
+    }
+}
+
 #[cfg(not(target_os = "windows"))]
-fn request_foreground_copy() -> Option<()> {
-    None
+fn remember_foreground_window() {}
+
+#[cfg(target_os = "windows")]
+fn focus_last_target_window() -> Option<()> {
+    let hwnd = LAST_TARGET_HWND.lock().ok().and_then(|target| *target)?;
+    let result = unsafe { SetForegroundWindow(hwnd as *mut std::ffi::c_void) };
+    (result != 0).then_some(())
 }
 
 fn write_clipboard(text: &str) -> Option<()> {
@@ -67,6 +111,13 @@ fn write_clipboard(text: &str) -> Option<()> {
     child.stdin.as_mut()?.write_all(text.as_bytes()).ok()?;
     let status = child.wait().ok()?;
     status.success().then_some(())
+}
+
+#[cfg(target_os = "windows")]
+#[link(name = "user32")]
+extern "system" {
+    fn GetForegroundWindow() -> *mut std::ffi::c_void;
+    fn SetForegroundWindow(hwnd: *mut std::ffi::c_void) -> i32;
 }
 
 #[cfg(test)]

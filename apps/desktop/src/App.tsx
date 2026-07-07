@@ -243,7 +243,7 @@ function CaptureHud({ seed }: { seed: string }) {
 
   async function pasteBack() {
     await pasteNativeText(rewritten);
-    setStatus("Result ready to paste back");
+    setStatus("Pasted back when the captured app was available");
   }
 
   return (

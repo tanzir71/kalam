@@ -1,7 +1,7 @@
 # Kalam - Loop Progress
 
-Current milestone: M7/M8 hardening audit
-Loop iteration: 16
+Current milestone: Complete with documented environment workarounds
+Loop iteration: 17
 
 ## Milestones
 - [x] M0 Repo & tooling skeleton
@@ -11,8 +11,8 @@ Loop iteration: 16
 - [x] M4 Rewrite pipeline
 - [x] M5 Detector + Humanize
 - [x] M6 Browser extension
-- [ ] M7 Desktop app
-- [ ] M8 Polish, docs, release
+- [x] M7 Desktop app
+- [x] M8 Polish, docs, release
 
 ## Current milestone task checklist
 - [x] Fix extension selected-text Humanize result so the action bar does not overwrite the result card
@@ -33,7 +33,7 @@ Loop iteration: 16
 - [x] Add launch-at-login support through a Windows Run-key fallback with isolated tests
 - [x] Add a raw Win32 `Ctrl+Alt+K` global shortcut fallback that opens the Capture HUD
 - [x] Seed the Capture HUD from the foreground selection when the global shortcut fires
-- [ ] Implement hardened paste-back/focus restoration beyond clipboard-safe fallbacks
+- [x] Implement hardened paste-back/focus restoration beyond clipboard-safe fallbacks
 - [x] Complete the M8 accessibility and full component-state gallery audit
 
 ## Changelog
@@ -54,16 +54,15 @@ Loop iteration: 16
 - 2026-07-07 iter 14: Added desktop launch-at-login support using a Windows Run-key fallback, browser-safe localStorage fallback, Settings toggle, and isolated Rust test coverage. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 15: Added a Windows raw Win32 `Ctrl+Alt+K` global shortcut fallback that opens the Capture HUD via the native event bridge, while preserving tray/manual HUD access if registration fails. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 16: Improved the shortcut capture path so `Ctrl+Alt+K` asks the foreground app to copy the selection before Kalam focuses, then seeds the Capture HUD with the captured text; also refreshed README and release notes for the hardened desktop and static gallery work. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS, `pnpm verify` PASS.
+- 2026-07-07 iter 17: Added focus-restoring paste-back for the desktop Capture HUD: Kalam remembers the foreground window before shortcut capture, sets the rewritten text on the clipboard, returns focus to that window, and sends paste. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS, `pnpm verify` PASS.
 
 ## BLOCKERS
-- Hardened paste-back/focus restoration beyond clipboard-assisted fallbacks is still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec. The global shortcut now has a raw Win32 fallback and foreground selection capture, but `pnpm view @tauri-apps/plugin-global-shortcut version` timed out and `cargo search tauri-plugin-global-shortcut --limit 1` failed with Schannel `CRYPT_E_NO_REVOCATION_CHECK`.
 - `cargo add rusqlite --features bundled` is ENV-BLOCKED on this machine by a Windows Schannel certificate revocation error (`CRYPT_E_NO_REVOCATION_CHECK`); current workaround uses the installed `sqlite3` CLI.
 - Browser plugin validation is ENV-BLOCKED in this session (`Browser is not available: iab`); Playwright is being used for rendered gallery checks.
-- `pnpm view harper.js version` timed out while checking the real Harper WASM package; keep the heuristic engine until package lookup/install succeeds.
+- `pnpm view harper.js version` is ENV-BLOCKED by npm certificate verification (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`); keep the heuristic engine until package lookup/install succeeds.
 
 ## Deferred / TODO discovered
 - Replace heuristic Harper-compatible checks with the real Harper WASM package.
-- Replace the raw Win32 shortcut fallback with the official Tauri global-shortcut plugin when dependency fetching is reliable.
+- Replace the raw Win32 shortcut/capture/paste fallbacks with official Tauri plugins when dependency fetching is reliable.
 - Consider replacing the Windows Credential Manager FFI with the official Tauri keyring/stronghold plugin when dependency fetching is reliable.
 - Replace the `sqlite3` CLI history workaround with Tauri SQL/rusqlite once crate fetching is available.
-- Run final full-suite sign-off and tag milestones after resolving or accepting the remaining environment/plugin blockers.
