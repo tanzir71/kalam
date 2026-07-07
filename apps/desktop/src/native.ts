@@ -35,6 +35,10 @@ export interface NativePullStatus {
   done: boolean;
 }
 
+interface CaptureHudEventPayload {
+  text?: string;
+}
+
 const SETTINGS_KEY = "kalam.desktop.settings";
 const LAUNCH_AT_LOGIN_KEY = "kalam.desktop.launchAtLogin";
 
@@ -137,11 +141,13 @@ export async function saveLaunchAtLogin(enabled: boolean): Promise<boolean> {
   return saved;
 }
 
-export function listenForNativeCaptureHud(callback: () => void): () => void {
+export function listenForNativeCaptureHud(callback: (text?: string) => void): () => void {
   if (!isTauriRuntime()) return () => {};
 
   let unlisten: (() => void) | undefined;
-  void listen("kalam://open-hud", callback).then((release) => {
+  void listen<CaptureHudEventPayload>("kalam://open-hud", (event) => {
+    callback(event.payload?.text);
+  }).then((release) => {
     unlisten = release;
   });
 

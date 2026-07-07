@@ -16,5 +16,6 @@ pnpm e2e:ext
 - Popup with site toggle, privacy badge, quick stats.
 - Options page for backend/cloud/dictionary/Humanize settings.
 - UI gallery at `ui-gallery.html`.
+- Static no-module gallery artifact at `dist/<target>/ui-gallery-static.html` after build.
 
 Extension BYO keys are stored in `chrome.storage.local` and are never synced.

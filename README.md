@@ -11,8 +11,12 @@ Tagline: **Write clearly. Sound human.**
 - Mock/local/cloud adapter interfaces with privacy guards for BYO cloud keys.
 - Local AI-likelihood heuristic and iterative Humanize pipeline with meaning-preservation checks.
 - Shared `@kalam/ui` tokens/components plus a UI gallery.
-- Manifest V3 extension builds for Chrome and Firefox.
+- Manifest V3 extension builds for Chrome and Firefox, including a static no-module UI gallery artifact.
 - Desktop React workspace packaged by Tauri into Windows installers.
+- Desktop Capture HUD with clipboard-assisted capture/paste, a `Ctrl+Alt+K` global shortcut fallback, tray actions, and launch-at-login setting.
+- Desktop settings keep API keys out of `settings.json` and use Windows Credential Manager when available.
+- Desktop history persists locally through SQLite when the local `sqlite3` CLI is available, with JSON fallback.
+- Model Manager lists Ollama models and can pull models through Ollama's local `/api/pull` endpoint.
 
 ## Commands
 
@@ -41,4 +45,4 @@ Kalam defaults to local/no-AI behavior. Cloud adapters require explicit `cloud.e
 
 ## External Integrations
 
-The repo has local-first seams for Harper, LanguageTool, Ollama, LM Studio, OpenAI, Anthropic, Tauri SQL/keyring, and global capture. The current implementation ships graceful deterministic fallbacks so checks and UI flows work without those services.
+The repo has local-first seams for Harper, LanguageTool, Ollama, LM Studio, OpenAI, Anthropic, Tauri SQL/keyring, and global capture. The current implementation ships graceful deterministic fallbacks so checks and UI flows work without those services. Some OS integrations use local workarounds while package fetching is blocked: Windows Credential Manager FFI for key storage, `sqlite3` CLI for history, and raw Win32 `Ctrl+Alt+K` for global HUD launch.

@@ -12,6 +12,11 @@ pub fn register_capture_shortcut<R: Runtime>(app: &AppHandle<R>) {
     register_platform_capture_shortcut(app);
 }
 
+#[derive(Clone, serde::Serialize)]
+struct CaptureShortcutPayload {
+    text: String,
+}
+
 #[cfg(target_os = "windows")]
 fn register_platform_capture_shortcut<R: Runtime>(app: &AppHandle<R>) {
     let app = app.clone();
@@ -23,10 +28,11 @@ fn register_platform_capture_shortcut<R: Runtime>(app: &AppHandle<R>) {
         let mut msg = std::mem::zeroed::<MSG>();
         while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) > 0 {
             if msg.message == WM_HOTKEY && msg.w_param == HOTKEY_ID as usize {
+                let captured = crate::capture::capture_selection_fallback();
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
-                    let _ = window.emit(crate::tray::OPEN_HUD_EVENT, ());
+                    let _ = window.emit(crate::tray::OPEN_HUD_EVENT, CaptureShortcutPayload { text: captured });
                 }
             }
         }

@@ -1,11 +1,14 @@
 use std::io::Write;
 use std::process::{Command, Stdio};
+use std::time::Duration;
 
 pub fn capture_selection_fallback() -> String {
     if let Some(path) = test_clipboard_path() {
         return std::fs::read_to_string(path).unwrap_or_default();
     }
 
+    let _ = request_foreground_copy();
+    std::thread::sleep(Duration::from_millis(120));
     read_clipboard().unwrap_or_default()
 }
 
@@ -33,6 +36,24 @@ fn read_clipboard() -> Option<String> {
     }
     let raw = String::from_utf8(output.stdout).ok()?;
     Some(raw.trim_end_matches(['\r', '\n']).to_string())
+}
+
+#[cfg(target_os = "windows")]
+fn request_foreground_copy() -> Option<()> {
+    let status = Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-Command",
+            "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^c')",
+        ])
+        .status()
+        .ok()?;
+    status.success().then_some(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn request_foreground_copy() -> Option<()> {
+    None
 }
 
 fn write_clipboard(text: &str) -> Option<()> {

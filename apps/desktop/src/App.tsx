@@ -53,12 +53,20 @@ const nav: Array<{ view: DesktopView; label: string }> = [
 
 export function App() {
   const { view, setView, hydrateHistory } = useDesktopStore();
+  const [hudSeed, setHudSeed] = useState("");
 
   useEffect(() => {
     hydrateHistory();
   }, [hydrateHistory]);
 
-  useEffect(() => listenForNativeCaptureHud(() => setView("hud")), [setView]);
+  useEffect(
+    () =>
+      listenForNativeCaptureHud((text) => {
+        setHudSeed(text ?? "");
+        setView("hud");
+      }),
+    [setView]
+  );
 
   return (
     <main className="k-root desktop-shell">
@@ -81,7 +89,7 @@ export function App() {
         <TopBar />
         {view === "editor" ? <EditorWorkspace /> : null}
         {view === "humanize" ? <HumanizeWorkspace /> : null}
-        {view === "hud" ? <CaptureHud /> : null}
+        {view === "hud" ? <CaptureHud seed={hudSeed} /> : null}
         {view === "batch" ? <BatchMode /> : null}
         {view === "models" ? <ModelManager /> : null}
         {view === "history" ? <HistoryView /> : null}
@@ -197,12 +205,19 @@ function HumanizeWorkspace() {
   );
 }
 
-function CaptureHud() {
+function CaptureHud({ seed }: { seed: string }) {
   const [original, setOriginal] = useState("");
   const [rewritten, setRewritten] = useState("");
   const [status, setStatus] = useState(
     `Use ${captureShortcut} or the tray to open this HUD. Clipboard-assisted capture and paste stay local.`
   );
+
+  useEffect(() => {
+    if (!seed) return;
+    setOriginal(seed);
+    setRewritten(seed);
+    setStatus("Captured from global shortcut");
+  }, [seed]);
 
   async function captureClipboard() {
     const captured = await captureNativeSelection();
