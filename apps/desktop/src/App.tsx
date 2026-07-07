@@ -23,7 +23,15 @@ import {
   type Issue
 } from "@kalam/core";
 import { useEffect, useMemo, useState } from "react";
-import { listNativeModels, loadDesktopSettings, pullNativeModel, saveDesktopSettings, type NativeModel } from "./native";
+import {
+  captureNativeSelection,
+  listNativeModels,
+  loadDesktopSettings,
+  pasteNativeText,
+  pullNativeModel,
+  saveDesktopSettings,
+  type NativeModel
+} from "./native";
 import { useDesktopStore, type DesktopView } from "./store";
 
 const grammar = new HarperEngine();
@@ -31,6 +39,7 @@ const detector = new HeuristicDetector();
 const nav: Array<{ view: DesktopView; label: string }> = [
   { view: "editor", label: "Editor" },
   { view: "humanize", label: "Humanize" },
+  { view: "hud", label: "Capture HUD" },
   { view: "batch", label: "Batch" },
   { view: "models", label: "Model Manager" },
   { view: "history", label: "History" },
@@ -65,6 +74,7 @@ export function App() {
         <TopBar />
         {view === "editor" ? <EditorWorkspace /> : null}
         {view === "humanize" ? <HumanizeWorkspace /> : null}
+        {view === "hud" ? <CaptureHud /> : null}
         {view === "batch" ? <BatchMode /> : null}
         {view === "models" ? <ModelManager /> : null}
         {view === "history" ? <HistoryView /> : null}
@@ -177,6 +187,79 @@ function HumanizeWorkspace() {
         </HumanizePanel>
       </aside>
     </div>
+  );
+}
+
+function CaptureHud() {
+  const [original, setOriginal] = useState("");
+  const [rewritten, setRewritten] = useState("");
+  const [status, setStatus] = useState("Clipboard-assisted fallback. Global shortcut integration is pending.");
+
+  async function captureClipboard() {
+    const captured = await captureNativeSelection();
+    setOriginal(captured);
+    setRewritten(captured);
+    setStatus(captured ? "Captured from clipboard" : "Clipboard is empty");
+  }
+
+  async function humanizeCapturedText() {
+    const result = await humanize({ llm: new RuleAdapter(), detector }, original || rewritten, {
+      acknowledged: true,
+      maxPasses: 3,
+      targetScore: 35
+    });
+    setRewritten(result.text);
+    setStatus("Humanized with local rules");
+  }
+
+  async function copyResult() {
+    await pasteNativeText(rewritten);
+    setStatus("Result copied");
+  }
+
+  async function pasteBack() {
+    await pasteNativeText(rewritten);
+    setStatus("Result ready to paste back");
+  }
+
+  return (
+    <section className="desktop-panel k-stack">
+      <h2>Capture HUD</h2>
+      <PrivacyBadge tier="noai" />
+      <div className="desktop-workspace">
+        <label className="k-field">
+          <span className="k-label">Captured text</span>
+          <textarea
+            className="k-textarea"
+            value={original}
+            onChange={(event) => setOriginal(event.currentTarget.value)}
+          />
+        </label>
+        <label className="k-field">
+          <span className="k-label">Result</span>
+          <textarea
+            className="k-textarea"
+            value={rewritten}
+            onChange={(event) => setRewritten(event.currentTarget.value)}
+          />
+        </label>
+      </div>
+      <div className="k-row">
+        <Button variant="primary" onClick={captureClipboard}>
+          Capture clipboard
+        </Button>
+        <Button variant="accent" onClick={humanizeCapturedText}>
+          Humanize captured text
+        </Button>
+        <Button variant="secondary" onClick={copyResult}>
+          Copy result
+        </Button>
+        <Button variant="primary" onClick={pasteBack}>
+          Paste back
+        </Button>
+      </div>
+      <p className="k-muted">{status}</p>
+    </section>
   );
 }
 

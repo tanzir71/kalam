@@ -1,7 +1,7 @@
 # Kalam - Loop Progress
 
 Current milestone: M7/M8 hardening audit
-Loop iteration: 10
+Loop iteration: 11
 
 ## Milestones
 - [x] M0 Repo & tooling skeleton
@@ -28,6 +28,7 @@ Loop iteration: 10
 - [x] Replace queued Ollama pull placeholder with real `/api/pull` progress parsing and Model Manager pull controls
 - [x] Add automated focus/reduced-motion/touch-target checks and coarse-pointer 44px target CSS
 - [x] Add a single-file no-module `ui-gallery-static.html` artifact that opens directly from disk
+- [x] Add a desktop Capture HUD screen that exercises clipboard-assisted capture, humanize, copy, and paste fallback actions
 - [ ] Implement real global shortcut/capture/paste integration beyond clipboard-safe fallbacks
 - [ ] Complete the M8 accessibility and full component-state gallery audit
 
@@ -43,9 +44,10 @@ Loop iteration: 10
 - 2026-07-07 iter 8: Replaced the desktop Ollama pull placeholder with a real `/api/pull` request, streaming progress parser, native command result, and Model Manager pull controls. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 9: Added automated UI CSS checks for reduced motion, focus-visible, and coarse-pointer touch target sizing; added 44px touch targets under `@media (pointer: coarse)`. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm e2e:ext` PASS.
 - 2026-07-07 iter 10: Added post-build server-rendered `ui-gallery-static.html` artifacts for Chrome and Firefox extension builds, with inline CSS and no module scripts, so the gallery opens directly from disk. Verification: `pnpm --filter @kalam/extension test` PASS, `pnpm --filter @kalam/extension typecheck` PASS, `pnpm --filter @kalam/extension lint` PASS, `pnpm --filter @kalam/extension build` PASS, Playwright `file://.../ui-gallery-static.html` PASS, `pnpm e2e:ext` PASS.
+- 2026-07-07 iter 11: Added a desktop Capture HUD view around the native capture/paste bridge, using clipboard-assisted browser fallbacks when plugin commands are unavailable, and covered the flow in desktop e2e. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 
 ## BLOCKERS
-- Global shortcut and hardened capture/paste beyond clipboard-assisted fallbacks are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec.
+- Global shortcut and hardened capture/paste beyond clipboard-assisted fallbacks are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec. `pnpm view @tauri-apps/plugin-global-shortcut version` timed out, and `cargo search tauri-plugin-global-shortcut --limit 1` failed with Schannel `CRYPT_E_NO_REVOCATION_CHECK`.
 - `cargo add rusqlite --features bundled` is ENV-BLOCKED on this machine by a Windows Schannel certificate revocation error (`CRYPT_E_NO_REVOCATION_CHECK`); current workaround uses the installed `sqlite3` CLI.
 - Browser plugin validation is ENV-BLOCKED in this session (`Browser is not available: iab`); Playwright is being used for rendered gallery checks.
 - `pnpm view harper.js version` timed out while checking the real Harper WASM package; keep the heuristic engine until package lookup/install succeeds.

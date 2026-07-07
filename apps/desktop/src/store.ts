@@ -2,7 +2,7 @@ import type { Issue, RewriteResult } from "@kalam/core";
 import { create } from "zustand";
 import { addNativeHistory, loadNativeHistory } from "./native";
 
-export type DesktopView = "editor" | "humanize" | "batch" | "models" | "history" | "settings";
+export type DesktopView = "editor" | "humanize" | "hud" | "batch" | "models" | "history" | "settings";
 
 export interface HistoryItem {
   id: string;

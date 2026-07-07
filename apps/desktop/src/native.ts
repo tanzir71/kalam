@@ -99,6 +99,29 @@ export async function pullNativeModel(model: string): Promise<NativePullStatus |
   }
 }
 
+export async function captureNativeSelection(): Promise<string> {
+  const native = await invokeIfAvailable<string>("capture_selection");
+  if (native !== undefined) return native;
+
+  try {
+    return await navigator.clipboard.readText();
+  } catch {
+    return "";
+  }
+}
+
+export async function pasteNativeText(text: string): Promise<string> {
+  const native = await invokeIfAvailable<string>("paste_text", { text });
+  if (native !== undefined) return native;
+
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Clipboard access may be unavailable in browser smoke tests.
+  }
+  return text;
+}
+
 async function invokeIfAvailable<T>(command: string, args?: Record<string, unknown>): Promise<T | undefined> {
   if (!isTauriRuntime()) return undefined;
   try {

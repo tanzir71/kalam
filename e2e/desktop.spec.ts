@@ -27,3 +27,13 @@ test("desktop model manager handles an absent Ollama server", async ({ page }) =
   await expect(page.getByRole("button", { name: "Pull model" })).toBeVisible();
   await expect(page.getByText(/Ollama is not running|No local models found/)).toBeVisible();
 });
+
+test("desktop capture HUD exposes clipboard-assisted actions", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Capture HUD" }).click();
+  await expect(page.getByRole("heading", { name: "Capture HUD" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Capture clipboard" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Humanize captured text" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copy result" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Paste back" })).toBeVisible();
+});
