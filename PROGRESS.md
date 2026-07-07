@@ -1,7 +1,7 @@
 # Kalam - Loop Progress
 
 Current milestone: M7/M8 hardening audit
-Loop iteration: 6
+Loop iteration: 7
 
 ## Milestones
 - [x] M0 Repo & tooling skeleton
@@ -20,7 +20,7 @@ Loop iteration: 6
 - [x] Add native desktop history persistence and wire it into the React store
 - [x] Replace the stubbed native Ollama model list with a localhost `/api/tags` query and graceful empty fallback
 - [x] Include Rust command tests in the canonical desktop package test script
-- [ ] Replace the current local secret-file workaround with OS keychain-backed storage
+- [x] Replace the current local secret-file workaround with OS keychain-backed storage on Windows, with file fallback elsewhere
 - [x] Replace JSON history with SQLite-backed history through the local `sqlite3` CLI fallback path
 - [x] Expand the UI gallery to cover button, suggestion, Humanize, underline, form, empty, and error states
 - [x] Replace static desktop capture/paste placeholders with clipboard-assisted PowerShell fallbacks and test isolation
@@ -36,9 +36,10 @@ Loop iteration: 6
 - 2026-07-07 iter 4: Expanded `@kalam/ui` gallery state coverage and fixed extension build asset paths to be relative. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm e2e:ext` PASS. Browser plugin validation was attempted but `iab` was unavailable; Playwright fallback confirmed the served gallery renders the new sections with no console errors.
 - 2026-07-07 iter 5: Replaced desktop capture/paste static placeholders with clipboard-assisted PowerShell fallbacks and test-only isolated clipboard storage. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 6: Added UI token WCAG AA contrast tests and darkened the light `textSubtle` token to pass 4.5:1. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm e2e:ext` PASS.
+- 2026-07-07 iter 7: Replaced desktop API key file storage on Windows with Credential Manager (`CredWriteW`/`CredReadW`/`CredDeleteW`) while retaining the file fallback for unsupported platforms or keychain failures. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 
 ## BLOCKERS
-- OS keychain, global shortcut, and hardened capture/paste are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec.
+- Global shortcut and hardened capture/paste beyond clipboard-assisted fallbacks are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec.
 - `cargo add rusqlite --features bundled` is ENV-BLOCKED on this machine by a Windows Schannel certificate revocation error (`CRYPT_E_NO_REVOCATION_CHECK`); current workaround uses the installed `sqlite3` CLI.
 - Browser plugin validation is ENV-BLOCKED in this session (`Browser is not available: iab`); Playwright is being used for rendered gallery checks.
 - Direct `file://` loading of Vite module output is blocked by Chromium module/CORS policy; serve `dist/*/ui-gallery.html` over a local static server for visual review until a single-file gallery artifact is added.
@@ -46,7 +47,8 @@ Loop iteration: 6
 
 ## Deferred / TODO discovered
 - Replace heuristic Harper-compatible checks with the real Harper WASM package.
-- Add Tauri keyring/global-shortcut integrations for the remaining M7 native requirements.
+- Add Tauri global-shortcut integration for the remaining M7 native requirement.
+- Consider replacing the Windows Credential Manager FFI with the official Tauri keyring/stronghold plugin when dependency fetching is reliable.
 - Replace the `sqlite3` CLI history workaround with Tauri SQL/rusqlite once crate fetching is available.
 - Connect real Ollama pull progress instead of the current queued-pull placeholder.
 - Add a single-file/static-no-module gallery artifact if direct `file://` opening is required.

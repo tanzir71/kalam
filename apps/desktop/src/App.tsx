@@ -317,7 +317,7 @@ function SettingsView() {
         ]}
         onChange={setProvider}
       />
-      <ApiKeyField value={apiKey} onChange={setApiKey} storageLabel="stored outside settings.json" />
+      <ApiKeyField value={apiKey} onChange={setApiKey} storageLabel="stored in your OS keychain" />
       <Button variant="primary" onClick={saveSettings}>
         Save settings
       </Button>

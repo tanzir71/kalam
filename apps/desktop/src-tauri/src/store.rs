@@ -4,8 +4,10 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-const REDACTED_SECRET: &str = "[stored-outside-settings]";
-const LEGACY_REDACTED_SECRET: &str = "[stored-in-keychain]";
+const DEFAULT_KEYCHAIN_TARGET: &str = "app.kalam.desktop/cloud-api-key";
+const KEYCHAIN_USER: &str = "kalam-cloud-provider";
+const REDACTED_SECRET: &str = "[stored-in-keychain]";
+const LEGACY_REDACTED_SECRET: &str = "[stored-outside-settings]";
 
 #[derive(Debug, Deserialize, Serialize)]
 struct StoredSettings {
@@ -39,7 +41,7 @@ pub fn settings_set(payload: SettingsPayload) -> SettingsPayload {
 
     match payload.api_key.as_deref() {
         Some("") => {
-            let _ = fs::remove_file(secret_path());
+            delete_secret();
         }
         Some(REDACTED_SECRET) | Some(LEGACY_REDACTED_SECRET) | None => {}
         Some(api_key) => {
@@ -76,16 +78,42 @@ fn default_stored_settings() -> StoredSettings {
 }
 
 fn read_secret() -> Option<String> {
-    read_json::<StoredSecret>(secret_path()).map(|secret| secret.api_key)
+    read_keychain_secret().or_else(|| read_json::<StoredSecret>(secret_path()).map(|secret| secret.api_key))
 }
 
 fn write_secret(api_key: &str) -> std::io::Result<()> {
+    if write_keychain_secret(api_key).is_some() {
+        let _ = fs::remove_file(secret_path());
+        return Ok(());
+    }
+
     write_json(
         secret_path(),
         &StoredSecret {
             api_key: api_key.to_string(),
         },
     )
+}
+
+fn delete_secret() {
+    let _ = delete_keychain_secret();
+    let _ = fs::remove_file(secret_path());
+}
+
+fn keychain_target() -> String {
+    std::env::var("KALAM_KEYCHAIN_TARGET").unwrap_or_else(|_| DEFAULT_KEYCHAIN_TARGET.to_string())
+}
+
+fn read_keychain_secret() -> Option<String> {
+    platform_keychain_read(&keychain_target())
+}
+
+fn write_keychain_secret(api_key: &str) -> Option<()> {
+    platform_keychain_write(&keychain_target(), KEYCHAIN_USER, api_key)
+}
+
+fn delete_keychain_secret() -> Option<()> {
+    platform_keychain_delete(&keychain_target())
 }
 
 fn settings_path() -> PathBuf {
@@ -200,6 +228,143 @@ where
     fs::write(path, raw)
 }
 
+#[cfg(not(windows))]
+fn platform_keychain_read(_target: &str) -> Option<String> {
+    None
+}
+
+#[cfg(not(windows))]
+fn platform_keychain_write(_target: &str, _user: &str, _secret: &str) -> Option<()> {
+    None
+}
+
+#[cfg(not(windows))]
+fn platform_keychain_delete(_target: &str) -> Option<()> {
+    None
+}
+
+#[cfg(windows)]
+fn platform_keychain_read(target: &str) -> Option<String> {
+    windows_keychain::read(target)
+}
+
+#[cfg(windows)]
+fn platform_keychain_write(target: &str, user: &str, secret: &str) -> Option<()> {
+    windows_keychain::write(target, user, secret)
+}
+
+#[cfg(windows)]
+fn platform_keychain_delete(target: &str) -> Option<()> {
+    windows_keychain::delete(target)
+}
+
+#[cfg(windows)]
+mod windows_keychain {
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
+    use std::ptr::null_mut;
+
+    const CRED_TYPE_GENERIC: u32 = 1;
+    const CRED_PERSIST_LOCAL_MACHINE: u32 = 2;
+
+    #[repr(C)]
+    struct FileTime {
+        low_date_time: u32,
+        high_date_time: u32,
+    }
+
+    #[repr(C)]
+    struct CredentialW {
+        flags: u32,
+        credential_type: u32,
+        target_name: *mut u16,
+        comment: *mut u16,
+        last_written: FileTime,
+        credential_blob_size: u32,
+        credential_blob: *mut u8,
+        persist: u32,
+        attribute_count: u32,
+        attributes: *mut core::ffi::c_void,
+        target_alias: *mut u16,
+        user_name: *mut u16,
+    }
+
+    #[link(name = "Advapi32")]
+    extern "system" {
+        fn CredWriteW(credential: *const CredentialW, flags: u32) -> i32;
+        fn CredReadW(
+            target_name: *const u16,
+            credential_type: u32,
+            flags: u32,
+            credential: *mut *mut CredentialW,
+        ) -> i32;
+        fn CredDeleteW(target_name: *const u16, credential_type: u32, flags: u32) -> i32;
+        fn CredFree(buffer: *mut core::ffi::c_void);
+    }
+
+    pub fn read(target: &str) -> Option<String> {
+        let target_wide = wide(target);
+        let mut credential: *mut CredentialW = null_mut();
+        let ok = unsafe { CredReadW(target_wide.as_ptr(), CRED_TYPE_GENERIC, 0, &mut credential) };
+        if ok == 0 || credential.is_null() {
+            return None;
+        }
+
+        let result = unsafe {
+            let credential_ref = &*credential;
+            if credential_ref.credential_blob.is_null() {
+                Some(String::new())
+            } else {
+                let bytes = std::slice::from_raw_parts(
+                    credential_ref.credential_blob,
+                    credential_ref.credential_blob_size as usize,
+                );
+                String::from_utf8(bytes.to_vec()).ok()
+            }
+        };
+        unsafe {
+            CredFree(credential as *mut core::ffi::c_void);
+        }
+        result
+    }
+
+    pub fn write(target: &str, user: &str, secret: &str) -> Option<()> {
+        let target_wide = wide(target);
+        let user_wide = wide(user);
+        let mut secret_bytes = secret.as_bytes().to_vec();
+        let blob_size = u32::try_from(secret_bytes.len()).ok()?;
+        let credential = CredentialW {
+            flags: 0,
+            credential_type: CRED_TYPE_GENERIC,
+            target_name: target_wide.as_ptr() as *mut u16,
+            comment: null_mut(),
+            last_written: FileTime {
+                low_date_time: 0,
+                high_date_time: 0,
+            },
+            credential_blob_size: blob_size,
+            credential_blob: secret_bytes.as_mut_ptr(),
+            persist: CRED_PERSIST_LOCAL_MACHINE,
+            attribute_count: 0,
+            attributes: null_mut(),
+            target_alias: null_mut(),
+            user_name: user_wide.as_ptr() as *mut u16,
+        };
+        let ok = unsafe { CredWriteW(&credential, 0) };
+        (ok != 0).then_some(())
+    }
+
+    pub fn delete(target: &str) -> Option<()> {
+        let target_wide = wide(target);
+        let ok = unsafe { CredDeleteW(target_wide.as_ptr(), CRED_TYPE_GENERIC, 0) };
+        (ok != 0).then_some(())
+    }
+
+    fn wide(value: &str) -> Vec<u16> {
+        OsStr::new(value).encode_wide().chain([0]).collect()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -233,6 +398,9 @@ mod tests {
 
             let settings_file = fs::read_to_string(dir.join("settings.json")).expect("settings file exists");
             assert!(!settings_file.contains("sk-local-test"));
+            if cfg!(windows) {
+                assert!(!dir.join("secrets.local.json").exists());
+            }
         });
     }
 
@@ -276,11 +444,15 @@ mod tests {
                 .expect("clock before epoch")
                 .as_nanos()
         ));
+        let keychain_target = format!("app.kalam.desktop/test-{}", dir.file_name().unwrap().to_string_lossy());
         std::env::set_var("KALAM_DATA_DIR", &dir);
+        std::env::set_var("KALAM_KEYCHAIN_TARGET", &keychain_target);
 
         run(dir.clone());
 
+        delete_secret();
         let _ = fs::remove_dir_all(dir);
+        std::env::remove_var("KALAM_KEYCHAIN_TARGET");
         std::env::remove_var("KALAM_DATA_DIR");
     }
 }
