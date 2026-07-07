@@ -9,7 +9,7 @@ export const colors = {
   border: "#E4E2DC",
   text: "#1C1B22",
   textMuted: "#63616C",
-  textSubtle: "#94929C",
+  textSubtle: "#74717D",
   spelling: "#E5484D",
   grammar: "#F5A623",
   style: "#3B82F6",
