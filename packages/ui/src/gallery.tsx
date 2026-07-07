@@ -14,6 +14,7 @@ import {
   ReadabilityMeter,
   RewriteGoalMenu,
   SegmentedControl,
+  SelectField,
   SuggestionCard,
   TierChip,
   Toast,
@@ -102,6 +103,15 @@ export function UiGallery() {
         <div className="k-card k-stack">
           <Toggle label="Enable site" checked />
           <Toggle label="Disable cloud" checked={false} />
+          <SelectField
+            label="Provider"
+            value="openai"
+            options={[
+              { label: "OpenAI", value: "openai" },
+              { label: "Anthropic", value: "anthropic" },
+              { label: "Local server", value: "local" }
+            ]}
+          />
           <SegmentedControl
             value="local"
             options={[
@@ -124,6 +134,18 @@ export function UiGallery() {
         <EmptyState title="Offline ready" />
         <Toast>Rewrite applied - Undo</Toast>
       </GallerySection>
+
+      <section className="k-root k-gallery k-gallery-theme-sample" data-theme="dark" aria-label="Dark theme states">
+        <header className="k-row" style={{ justifyContent: "space-between" }}>
+          <BrandMark lockup />
+          <PrivacyBadge tier="local" />
+        </header>
+        <GallerySection title="Dark theme states">
+          <SuggestionCard issue={demoIssue("style", "Style")} before="very useful" after="useful" />
+          <HumanizePanel beforeScore={71} afterScore={37} meaningPreserved passCount={2} tier="local" />
+          <ErrorState title="No network" message="Kalam still checks and rewrites with local rules." />
+        </GallerySection>
+      </section>
     </main>
   );
 }

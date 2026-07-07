@@ -173,10 +173,15 @@ export function RewriteGoalMenu({
           key={item.goal}
           className="k-button k-button-ghost"
           type="button"
-          aria-pressed={value === item.goal}
+          role="menuitemradio"
+          aria-checked={value === item.goal}
           onClick={() => onSelect?.(item.goal)}
         >
-          {item.goal === "humanize" ? <Wand2 size={16} /> : <Sparkles size={16} />}
+          {item.goal === "humanize" ? (
+            <Wand2 size={16} aria-hidden="true" />
+          ) : (
+            <Sparkles size={16} aria-hidden="true" />
+          )}
           <span>
             <strong>{item.label}</strong>
             <br />
@@ -308,7 +313,7 @@ export function ReadabilityMeter({
 }
 
 export function Underline({ type = "spelling" }: { type?: Issue["type"] }) {
-  return <span className="k-underline" data-type={type} aria-hidden="true" />;
+  return <span className="k-underline" data-type={type} role="img" aria-label={`${type} issue underline`} />;
 }
 
 export function Toggle({

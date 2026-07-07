@@ -1,7 +1,7 @@
 # Kalam - Loop Progress
 
 Current milestone: M7/M8 hardening audit
-Loop iteration: 12
+Loop iteration: 13
 
 ## Milestones
 - [x] M0 Repo & tooling skeleton
@@ -31,7 +31,7 @@ Loop iteration: 12
 - [x] Add a desktop Capture HUD screen that exercises clipboard-assisted capture, humanize, copy, and paste fallback actions
 - [x] Add a Tauri system tray with Show, Capture HUD, and Quit actions
 - [ ] Implement real global shortcut/capture/paste integration beyond clipboard-safe fallbacks
-- [ ] Complete the M8 accessibility and full component-state gallery audit
+- [x] Complete the M8 accessibility and full component-state gallery audit
 
 ## Changelog
 - 2026-07-07 iter 0: Started from blank workspace containing only `KALAM.md`; initializing M0.
@@ -47,6 +47,7 @@ Loop iteration: 12
 - 2026-07-07 iter 10: Added post-build server-rendered `ui-gallery-static.html` artifacts for Chrome and Firefox extension builds, with inline CSS and no module scripts, so the gallery opens directly from disk. Verification: `pnpm --filter @kalam/extension test` PASS, `pnpm --filter @kalam/extension typecheck` PASS, `pnpm --filter @kalam/extension lint` PASS, `pnpm --filter @kalam/extension build` PASS, Playwright `file://.../ui-gallery-static.html` PASS, `pnpm e2e:ext` PASS.
 - 2026-07-07 iter 11: Added a desktop Capture HUD view around the native capture/paste bridge, using clipboard-assisted browser fallbacks when plugin commands are unavailable, and covered the flow in desktop e2e. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 12: Added built-in Tauri tray support with Show, Capture HUD, and Quit actions; the Capture HUD tray item emits a native event that opens the HUD view in the React app. Verification: `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
+- 2026-07-07 iter 13: Completed the shared UI gallery audit with the missing provider select, explicit dark-theme states, menu-radio rewrite goals, and assistive underline labels. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm --filter @kalam/extension test` PASS, `pnpm --filter @kalam/extension typecheck` PASS, `pnpm --filter @kalam/extension lint` PASS, `pnpm e2e:ext` PASS, Playwright `file://.../ui-gallery-static.html` PASS.
 
 ## BLOCKERS
 - Global shortcut and hardened capture/paste beyond clipboard-assisted fallbacks are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec. `pnpm view @tauri-apps/plugin-global-shortcut version` timed out, and `cargo search tauri-plugin-global-shortcut --limit 1` failed with Schannel `CRYPT_E_NO_REVOCATION_CHECK`.
@@ -59,4 +60,4 @@ Loop iteration: 12
 - Add Tauri global-shortcut integration for the remaining M7 native requirement.
 - Consider replacing the Windows Credential Manager FFI with the official Tauri keyring/stronghold plugin when dependency fetching is reliable.
 - Replace the `sqlite3` CLI history workaround with Tauri SQL/rusqlite once crate fetching is available.
-- Complete M8 a11y coverage beyond the current expanded gallery smoke checks.
+- Run final full-suite sign-off and tag milestones after resolving or accepting the remaining environment/plugin blockers.

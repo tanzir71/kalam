@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { colors, darkColors, HumanizePanel, PrivacyBadge, UiGallery } from "../src";
+import { colors, darkColors, HumanizePanel, PrivacyBadge, UiGallery, Underline } from "../src";
 
 describe("@kalam/ui", () => {
   it("renders privacy badge labels for every tier", () => {
@@ -26,9 +26,17 @@ describe("@kalam/ui", () => {
     expect(html).toContain("Ollama is not running");
     expect(html).toContain("Button states");
     expect(html).toContain("Humanize states");
+    expect(html).toContain("Provider");
     expect(html).toContain("Cloud disabled");
     expect(html).toContain("Check meaning");
     expect(html).toContain("Readability underline");
+    expect(html).toContain("Dark theme states");
+    expect(html).toContain("No network");
+    expect(html).toContain("role=\"menuitemradio\"");
+  });
+
+  it("exposes underline meaning to assistive tech", () => {
+    expect(renderToStaticMarkup(<Underline type="spelling" />)).toContain("aria-label=\"spelling issue underline\"");
   });
 
   it("keeps semantic text tokens at WCAG AA contrast", () => {
@@ -51,6 +59,7 @@ describe("@kalam/ui", () => {
     const css = readFileSync(resolve(__dirname, "../src/styles.css"), "utf8");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
     expect(css).toContain(":focus-visible");
+    expect(css).toContain("[data-theme=\"dark\"]");
     expect(css).toContain("@media (pointer: coarse)");
     expect(css).toContain("min-height: 44px");
   });
