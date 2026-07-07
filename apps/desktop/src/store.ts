@@ -1,5 +1,6 @@
 import type { Issue, RewriteResult } from "@kalam/core";
 import { create } from "zustand";
+import { addNativeHistory, loadNativeHistory } from "./native";
 
 export type DesktopView = "editor" | "humanize" | "batch" | "models" | "history" | "settings";
 
@@ -21,6 +22,7 @@ interface DesktopState {
   setIssues: (issues: Issue[]) => void;
   setLastResult: (result: RewriteResult | undefined) => void;
   addHistory: (item: HistoryItem) => void;
+  hydrateHistory: () => void;
 }
 
 export const useDesktopStore = create<DesktopState>((set) => ({
@@ -33,12 +35,21 @@ export const useDesktopStore = create<DesktopState>((set) => ({
   setText: (text) => set({ text }),
   setIssues: (issues) => set({ issues }),
   setLastResult: (lastResult) => set({ lastResult }),
-  addHistory: (item) =>
+  addHistory: (item) => {
     set((state) => {
       const history = [item, ...state.history].slice(0, 25);
       localStorage.setItem("kalam.desktop.history", JSON.stringify(history));
       return { history };
-    })
+    });
+    void addNativeHistory(item).then((history) => {
+      if (history) set({ history });
+    });
+  },
+  hydrateHistory: () => {
+    void loadNativeHistory().then((history) => {
+      if (history) set({ history });
+    });
+  }
 }));
 
 function loadHistory(): HistoryItem[] {

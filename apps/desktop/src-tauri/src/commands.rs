@@ -6,10 +6,11 @@ pub struct OllamaModel {
     pub size: Option<u64>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct HistoryRow {
     pub id: String,
-    pub text: String,
+    pub original: String,
+    pub rewritten: String,
     pub created_at: u64,
 }
 
@@ -60,7 +61,12 @@ pub fn run_humanize(text: String) -> Result<String, String> {
 
 #[tauri::command]
 pub fn history_query() -> Result<Vec<HistoryRow>, String> {
-    Ok(Vec::new())
+    Ok(crate::store::history_query())
+}
+
+#[tauri::command]
+pub fn history_add(row: HistoryRow) -> Result<Vec<HistoryRow>, String> {
+    Ok(crate::store::history_add(row))
 }
 
 #[tauri::command]

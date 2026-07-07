@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:web": "vite build",
     "tauri": "tauri",
-    "test": "vitest run",
+    "test": "vitest run && cargo test --manifest-path src-tauri/Cargo.toml",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

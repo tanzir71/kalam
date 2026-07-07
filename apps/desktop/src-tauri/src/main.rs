@@ -13,6 +13,7 @@ fn main() {
             commands::grammar_deep_check,
             commands::run_humanize,
             commands::history_query,
+            commands::history_add,
             commands::settings_get,
             commands::settings_set
         ])

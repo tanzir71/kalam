@@ -1,5 +1,12 @@
 let shadow: ShadowRoot | undefined;
 let activeEditable: HTMLTextAreaElement | HTMLInputElement | HTMLElement | undefined;
+let lastHumanizeResult:
+  | {
+      start: number;
+      end: number;
+      text: string;
+    }
+  | undefined;
 
 document.addEventListener("focusin", (event) => {
   const editable = findEditable(event.target);
@@ -51,6 +58,8 @@ function renderSelectionActions(): void {
   if (!editable) return;
   const selection = getSelectionRange(editable);
   if (!selection || selection.start === selection.end) return;
+  const selectedText = readText(editable).slice(selection.start, selection.end);
+  if (isShowingResultForSelection(selection, selectedText)) return;
   renderOverlay(`
     <style>${overlayCss()}</style>
     <div class="kalam-bar" data-testid="kalam-action-bar">
@@ -60,11 +69,17 @@ function renderSelectionActions(): void {
   `);
   shadow?.getElementById("kalam-humanize")?.addEventListener("pointerdown", async (event) => {
     event.preventDefault();
+    event.stopPropagation();
     const text = readText(editable).slice(selection.start, selection.end);
     const beforeScore = scoreEstimate(text);
     const rewritten = humanizeSelection(text);
     const afterScore = scoreEstimate(rewritten);
     replaceRange(editable, selection.start, selection.end, rewritten);
+    lastHumanizeResult = {
+      start: selection.start,
+      end: selection.start + rewritten.length,
+      text: rewritten
+    };
     renderOverlay(`
       <style>${overlayCss()}</style>
       <div class="kalam-card" data-testid="kalam-result">
@@ -74,6 +89,16 @@ function renderSelectionActions(): void {
       </div>
     `);
   });
+}
+
+function isShowingResultForSelection(selection: { start: number; end: number }, selectedText: string): boolean {
+  return Boolean(
+    shadow?.querySelector('[data-testid="kalam-result"]') &&
+      lastHumanizeResult &&
+      selection.start === lastHumanizeResult.start &&
+      selection.end === lastHumanizeResult.end &&
+      selectedText === lastHumanizeResult.text
+  );
 }
 
 function findFirstIssue(text: string):

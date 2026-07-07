@@ -23,6 +23,7 @@ import {
   type Issue
 } from "@kalam/core";
 import { useEffect, useMemo, useState } from "react";
+import { listNativeModels, loadDesktopSettings, saveDesktopSettings, type NativeModel } from "./native";
 import { useDesktopStore, type DesktopView } from "./store";
 
 const grammar = new HarperEngine();
@@ -37,7 +38,12 @@ const nav: Array<{ view: DesktopView; label: string }> = [
 ];
 
 export function App() {
-  const { view, setView } = useDesktopStore();
+  const { view, setView, hydrateHistory } = useDesktopStore();
+
+  useEffect(() => {
+    hydrateHistory();
+  }, [hydrateHistory]);
+
   return (
     <main className="k-root desktop-shell">
       <aside className="desktop-rail">
@@ -193,21 +199,34 @@ function BatchMode() {
 }
 
 function ModelManager() {
-  const [models, setModels] = useState<Array<{ name: string; size?: number }>>([]);
+  const [models, setModels] = useState<NativeModel[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    void fetch("http://localhost:11434/api/tags")
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("Ollama unavailable"))))
-      .then((data: { models?: Array<{ name: string; size?: number }> }) => {
-        setModels(data.models ?? []);
-        setError("");
-      })
-      .catch(() => {
-        setError("Ollama is not running");
-        setModels([]);
-      });
+    let cancelled = false;
+    void loadModels().then(({ models: loadedModels, error: loadError }) => {
+      if (cancelled) return;
+      setModels(loadedModels);
+      setError(loadError);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  async function loadModels(): Promise<{ models: NativeModel[]; error: string }> {
+    const nativeModels = await listNativeModels();
+    if (nativeModels) return { models: nativeModels, error: "" };
+
+    try {
+      const response = await fetch("http://localhost:11434/api/tags");
+      if (!response.ok) throw new Error("Ollama unavailable");
+      const data = (await response.json()) as { models?: NativeModel[] };
+      return { models: data.models ?? [], error: "" };
+    } catch {
+      return { models: [], error: "Ollama is not running" };
+    }
+  }
 
   return (
     <section className="desktop-panel k-stack">
@@ -249,6 +268,34 @@ function SettingsView() {
   const [backend, setBackend] = useState<"noai" | "local" | "cloud">("noai");
   const [provider, setProvider] = useState("openai");
   const [apiKey, setApiKey] = useState("");
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadDesktopSettings().then((settings) => {
+      if (cancelled) return;
+      setBackend(settings.backend);
+      setProvider(settings.provider);
+      setApiKey(settings.apiKey);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function saveSettings() {
+    const saved = await saveDesktopSettings({
+      backend,
+      cloudEnabled: backend === "cloud",
+      provider,
+      apiKey
+    });
+    setBackend(saved.backend);
+    setProvider(saved.provider);
+    setApiKey(saved.apiKey);
+    setStatus("Settings saved");
+  }
+
   return (
     <section className="desktop-panel k-stack">
       <h2>Settings</h2>
@@ -270,7 +317,11 @@ function SettingsView() {
         ]}
         onChange={setProvider}
       />
-      <ApiKeyField value={apiKey} onChange={setApiKey} storageLabel="stored via the OS keychain command" />
+      <ApiKeyField value={apiKey} onChange={setApiKey} storageLabel="stored outside settings.json" />
+      <Button variant="primary" onClick={saveSettings}>
+        Save settings
+      </Button>
+      {status ? <p className="k-muted">{status}</p> : null}
     </section>
   );
 }
