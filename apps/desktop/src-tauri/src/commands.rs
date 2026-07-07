@@ -6,6 +6,14 @@ pub struct OllamaModel {
     pub size: Option<u64>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct OllamaPullStatus {
+    pub status: String,
+    pub completed: Option<u64>,
+    pub total: Option<u64>,
+    pub done: bool,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct HistoryRow {
     pub id: String,
@@ -38,8 +46,8 @@ pub fn list_ollama_models() -> Result<Vec<OllamaModel>, String> {
 }
 
 #[tauri::command]
-pub fn pull_ollama_model(model: String) -> Result<String, String> {
-    Ok(format!("queued pull for {model}"))
+pub fn pull_ollama_model(model: String) -> Result<OllamaPullStatus, String> {
+    crate::ollama::pull_ollama_model(&model)
 }
 
 #[tauri::command]

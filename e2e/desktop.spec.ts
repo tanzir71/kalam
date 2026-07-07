@@ -23,5 +23,7 @@ test("desktop model manager handles an absent Ollama server", async ({ page }) =
   await page.goto("/");
   await page.getByRole("button", { name: "Model Manager" }).click();
   await expect(page.getByRole("heading", { name: "Model Manager" })).toBeVisible();
+  await expect(page.getByLabel("Model name")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pull model" })).toBeVisible();
   await expect(page.getByText(/Ollama is not running|No local models found/)).toBeVisible();
 });

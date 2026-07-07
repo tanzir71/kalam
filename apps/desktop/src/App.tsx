@@ -23,7 +23,7 @@ import {
   type Issue
 } from "@kalam/core";
 import { useEffect, useMemo, useState } from "react";
-import { listNativeModels, loadDesktopSettings, saveDesktopSettings, type NativeModel } from "./native";
+import { listNativeModels, loadDesktopSettings, pullNativeModel, saveDesktopSettings, type NativeModel } from "./native";
 import { useDesktopStore, type DesktopView } from "./store";
 
 const grammar = new HarperEngine();
@@ -201,6 +201,9 @@ function BatchMode() {
 function ModelManager() {
   const [models, setModels] = useState<NativeModel[]>([]);
   const [error, setError] = useState("");
+  const [modelName, setModelName] = useState("llama3.1:8b");
+  const [pullStatus, setPullStatus] = useState("");
+  const [isPulling, setIsPulling] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -228,9 +231,43 @@ function ModelManager() {
     }
   }
 
+  async function pullModel() {
+    setIsPulling(true);
+    setPullStatus("Pulling model");
+    const status = await pullNativeModel(modelName.trim());
+    setIsPulling(false);
+    if (!status) {
+      setPullStatus("Ollama is not running. Kalam still works with local rules.");
+      return;
+    }
+    const progress =
+      status.completed && status.total ? ` (${Math.round((status.completed / status.total) * 100)}%)` : "";
+    setPullStatus(`${status.status}${progress}`);
+    if (status.done) {
+      const loaded = await loadModels();
+      setModels(loaded.models);
+      setError(loaded.error);
+    }
+  }
+
   return (
     <section className="desktop-panel k-stack">
       <h2>Model Manager</h2>
+      <div className="k-card k-stack">
+        <label className="k-field">
+          <span className="k-label">Model name</span>
+          <input
+            className="k-input"
+            aria-label="Model name"
+            value={modelName}
+            onChange={(event) => setModelName(event.currentTarget.value)}
+          />
+        </label>
+        <Button variant="primary" onClick={pullModel} loading={isPulling} disabled={!modelName.trim()}>
+          Pull model
+        </Button>
+        {pullStatus ? <p className="k-muted">{pullStatus}</p> : null}
+      </div>
       {error ? <ErrorState title={error} message="Kalam still works with local rules." /> : null}
       {models.length ? (
         <div className="model-list">

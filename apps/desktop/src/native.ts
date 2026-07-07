@@ -27,6 +27,13 @@ export interface NativeModel {
   size?: number;
 }
 
+export interface NativePullStatus {
+  status: string;
+  completed?: number;
+  total?: number;
+  done: boolean;
+}
+
 const SETTINGS_KEY = "kalam.desktop.settings";
 
 export async function loadDesktopSettings(): Promise<DesktopSettings> {
@@ -67,6 +74,29 @@ export async function addNativeHistory(item: HistoryItem): Promise<HistoryItem[]
 
 export async function listNativeModels(): Promise<NativeModel[] | undefined> {
   return invokeIfAvailable<NativeModel[]>("list_ollama_models");
+}
+
+export async function pullNativeModel(model: string): Promise<NativePullStatus | undefined> {
+  const native = await invokeIfAvailable<NativePullStatus>("pull_ollama_model", { model });
+  if (native) return native;
+
+  try {
+    const response = await fetch("http://localhost:11434/api/pull", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, stream: false })
+    });
+    if (!response.ok) return undefined;
+    const data = (await response.json()) as Partial<NativePullStatus>;
+    return {
+      status: data.status ?? "success",
+      completed: data.completed,
+      total: data.total,
+      done: data.done ?? data.status === "success"
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 async function invokeIfAvailable<T>(command: string, args?: Record<string, unknown>): Promise<T | undefined> {
