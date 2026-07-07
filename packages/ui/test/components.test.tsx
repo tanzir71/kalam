@@ -22,5 +22,10 @@ describe("@kalam/ui", () => {
     expect(html).toContain("Kalam");
     expect(html).toContain("Rewrite");
     expect(html).toContain("Ollama is not running");
+    expect(html).toContain("Button states");
+    expect(html).toContain("Humanize states");
+    expect(html).toContain("Cloud disabled");
+    expect(html).toContain("Check meaning");
+    expect(html).toContain("Readability underline");
   });
 });

@@ -18,6 +18,7 @@ function manifestPlugin(target: "chrome" | "firefox"): Plugin {
 export default defineConfig(({ mode }) => {
   const target = mode === "firefox" ? "firefox" : "chrome";
   return {
+    base: "./",
     plugins: [react(), manifestPlugin(target)],
     resolve: {
       alias: {
