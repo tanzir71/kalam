@@ -1,0 +1,131 @@
+body {
+  margin: 0;
+}
+
+.desktop-shell {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.desktop-rail {
+  align-content: start;
+  background: var(--k-surface);
+  border-right: 1px solid var(--k-border);
+  display: grid;
+  gap: 24px;
+  padding: 24px 18px;
+}
+
+.desktop-rail nav {
+  display: grid;
+  gap: 6px;
+}
+
+.desktop-rail button {
+  background: transparent;
+  border: 0;
+  border-radius: var(--k-radius-md);
+  color: var(--k-text-muted);
+  font: inherit;
+  min-height: 38px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.desktop-rail button[aria-current="page"],
+.desktop-rail button:hover {
+  background: var(--k-surface-2);
+  color: var(--k-text);
+}
+
+.desktop-main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.desktop-topbar {
+  align-items: center;
+  border-bottom: 1px solid var(--k-border);
+  display: flex;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 0 24px;
+}
+
+.desktop-topbar h1 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.desktop-workspace {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  padding: 24px;
+}
+
+.editor-pane,
+.inspector-pane,
+.desktop-panel {
+  min-width: 0;
+}
+
+.editor-pane {
+  display: grid;
+  gap: 16px;
+}
+
+.desktop-editor {
+  font-size: 1.0625rem;
+  min-height: 62vh;
+}
+
+.desktop-panel {
+  padding: 24px;
+}
+
+.model-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.issue-row {
+  border-top: 1px solid var(--k-border);
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+}
+
+.issue-row span {
+  color: var(--k-style);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.issue-row span[data-type="spelling"] {
+  color: var(--k-spelling);
+}
+
+.issue-row span[data-type="grammar"] {
+  color: var(--k-grammar);
+}
+
+.issue-row p {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .desktop-shell,
+  .desktop-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .desktop-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--k-border);
+  }
+}

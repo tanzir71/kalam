@@ -1,0 +1,21 @@
+mod capture;
+mod commands;
+mod ollama;
+mod store;
+
+fn main() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            commands::capture_selection,
+            commands::paste_text,
+            commands::list_ollama_models,
+            commands::pull_ollama_model,
+            commands::grammar_deep_check,
+            commands::run_humanize,
+            commands::history_query,
+            commands::settings_get,
+            commands::settings_set
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running Kalam desktop");
+}

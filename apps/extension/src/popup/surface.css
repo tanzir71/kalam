@@ -1,0 +1,62 @@
+body {
+  margin: 0;
+}
+
+.ext-popup {
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+  min-height: 480px;
+  padding: 16px;
+  width: 360px;
+}
+
+.ext-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.ext-options {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 760px);
+  min-height: 100vh;
+}
+
+.ext-nav {
+  align-content: start;
+  background: var(--k-surface);
+  border-right: 1px solid var(--k-border);
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+}
+
+.ext-nav a {
+  border-radius: var(--k-radius-md);
+  color: var(--k-text-muted);
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.ext-nav a:focus-visible,
+.ext-nav a:hover {
+  background: var(--k-surface-2);
+  color: var(--k-text);
+}
+
+.ext-panel {
+  padding: 32px;
+}
+
+@media (max-width: 720px) {
+  .ext-options {
+    grid-template-columns: 1fr;
+  }
+
+  .ext-nav {
+    border-right: 0;
+    border-bottom: 1px solid var(--k-border);
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@kalam/tsconfig-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.json",
+    "./react": "./react.json"
+  },
+  "scripts": {
+    "build": "node -e \"console.log('tsconfig presets ready')\"",
+    "test": "node -e \"console.log('no tests for tsconfig presets')\"",
+    "lint": "node -e \"console.log('no lint for tsconfig presets')\"",
+    "typecheck": "node -e \"console.log('no typecheck for tsconfig presets')\""
+  }
+}

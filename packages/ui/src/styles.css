@@ -1,0 +1,330 @@
+:root {
+  --k-primary: #3b3b98;
+  --k-primary-hover: #32328a;
+  --k-primary-subtle: #ebebfb;
+  --k-accent: #16b8a6;
+  --k-bg: #fbfaf7;
+  --k-surface: #ffffff;
+  --k-surface-2: #f3f2ee;
+  --k-border: #e4e2dc;
+  --k-text: #1c1b22;
+  --k-text-muted: #63616c;
+  --k-text-subtle: #94929c;
+  --k-spelling: #e5484d;
+  --k-grammar: #f5a623;
+  --k-style: #3b82f6;
+  --k-readability: #8b5cf6;
+  --k-success: #12a150;
+  --k-local: #12a150;
+  --k-cloud: #f5a623;
+  --k-tier-noai: #63616c;
+  --k-radius-sm: 6px;
+  --k-radius-md: 10px;
+  --k-radius-lg: 14px;
+  --k-radius-pill: 999px;
+  --k-shadow-e1: 0 8px 24px rgba(28, 27, 34, 0.1);
+  --k-shadow-e2: 0 14px 36px rgba(28, 27, 34, 0.14);
+  --k-shadow-e3: 0 24px 64px rgba(28, 27, 34, 0.18);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --k-bg: #14131a;
+    --k-surface: #1e1d26;
+    --k-surface-2: #25242d;
+    --k-border: #2a2933;
+    --k-text: #ecebf0;
+    --k-text-muted: #b8b5c2;
+    --k-text-subtle: #898696;
+    --k-primary-subtle: #252451;
+    color-scheme: dark;
+  }
+}
+
+.k-root {
+  background: var(--k-bg);
+  color: var(--k-text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+.k-button,
+.k-icon-button,
+.k-select,
+.k-input,
+.k-textarea {
+  font: inherit;
+}
+
+.k-button,
+.k-icon-button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--k-radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 36px;
+  transition:
+    background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.k-button {
+  padding: 0 14px;
+  font-weight: 500;
+}
+
+.k-icon-button {
+  height: 36px;
+  padding: 0;
+  width: 36px;
+}
+
+.k-button-primary {
+  background: var(--k-primary);
+  color: #ffffff;
+}
+
+.k-button-primary:hover {
+  background: var(--k-primary-hover);
+}
+
+.k-button-secondary {
+  background: var(--k-surface-2);
+  border-color: var(--k-border);
+  color: var(--k-text);
+}
+
+.k-button-accent {
+  background: var(--k-accent);
+  color: #06231f;
+}
+
+.k-button-ghost {
+  background: transparent;
+  color: var(--k-text-muted);
+}
+
+.k-button:focus-visible,
+.k-icon-button:focus-visible,
+.k-select:focus-visible,
+.k-input:focus-visible,
+.k-textarea:focus-visible {
+  outline: 2px solid var(--k-primary);
+  outline-offset: 2px;
+}
+
+.k-button:disabled,
+.k-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.k-badge,
+.k-chip {
+  align-items: center;
+  border-radius: var(--k-radius-pill);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.k-badge-local {
+  background: color-mix(in srgb, var(--k-local) 14%, transparent);
+  color: var(--k-local);
+}
+
+.k-badge-cloud {
+  background: color-mix(in srgb, var(--k-cloud) 16%, transparent);
+  color: #8a5700;
+}
+
+.k-badge-noai {
+  background: color-mix(in srgb, var(--k-tier-noai) 16%, transparent);
+  color: var(--k-text-muted);
+}
+
+.k-card,
+.k-popover {
+  background: var(--k-surface);
+  border: 1px solid var(--k-border);
+  border-radius: var(--k-radius-lg);
+  box-shadow: var(--k-shadow-e1);
+  color: var(--k-text);
+}
+
+.k-card {
+  padding: 16px;
+}
+
+.k-popover {
+  padding: 12px;
+}
+
+.k-muted {
+  color: var(--k-text-muted);
+}
+
+.k-subtle {
+  color: var(--k-text-subtle);
+}
+
+.k-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.k-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.k-toolbar {
+  align-items: center;
+  background: var(--k-surface);
+  border: 1px solid var(--k-border);
+  border-radius: var(--k-radius-lg);
+  box-shadow: var(--k-shadow-e2);
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+}
+
+.k-diff ins {
+  color: var(--k-success);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.k-diff del {
+  color: var(--k-text-muted);
+  text-decoration: line-through;
+}
+
+.k-meter {
+  background: var(--k-surface-2);
+  border-radius: var(--k-radius-pill);
+  height: 8px;
+  overflow: hidden;
+}
+
+.k-meter > span {
+  background: var(--k-accent);
+  display: block;
+  height: 100%;
+}
+
+.k-underline {
+  border-bottom: 2px wavy var(--k-spelling);
+  pointer-events: none;
+}
+
+.k-underline[data-type="grammar"] {
+  border-bottom-color: var(--k-grammar);
+}
+
+.k-underline[data-type="style"] {
+  border-bottom-color: var(--k-style);
+  border-bottom-style: dotted;
+}
+
+.k-underline[data-type="readability"] {
+  border-bottom-color: var(--k-readability);
+  border-bottom-style: dotted;
+}
+
+.k-field {
+  display: grid;
+  gap: 6px;
+}
+
+.k-label {
+  color: var(--k-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.k-input,
+.k-select,
+.k-textarea {
+  background: var(--k-surface);
+  border: 1px solid var(--k-border);
+  border-radius: var(--k-radius-md);
+  color: var(--k-text);
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.k-textarea {
+  line-height: 1.6;
+  min-height: 180px;
+  resize: vertical;
+}
+
+.k-segmented {
+  background: var(--k-surface-2);
+  border: 1px solid var(--k-border);
+  border-radius: var(--k-radius-md);
+  display: inline-grid;
+  grid-auto-flow: column;
+  padding: 3px;
+}
+
+.k-segmented button {
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--k-text-muted);
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.k-segmented button[aria-pressed="true"] {
+  background: var(--k-surface);
+  color: var(--k-text);
+  box-shadow: var(--k-shadow-e1);
+}
+
+.k-switch {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.k-switch input {
+  accent-color: var(--k-primary);
+}
+
+.k-gallery {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 32px;
+}
+
+.k-gallery-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "kalam",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "e2e:ext": "playwright test e2e/extension.spec.ts",
+    "e2e:desktop": "playwright test e2e/desktop.spec.ts",
+    "verify": "pnpm -r build && pnpm -r test && pnpm -r lint && pnpm -r typecheck && pnpm e2e:ext && pnpm e2e:desktop"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@playwright/test": "1.57.0",
+    "@types/node": "24.10.1",
+    "eslint": "9.39.1",
+    "prettier": "3.6.2",
+    "turbo": "2.6.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.48.0",
+    "vitest": "4.0.14"
+  }
+}
