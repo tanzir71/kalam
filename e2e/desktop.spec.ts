@@ -32,6 +32,7 @@ test("desktop capture HUD exposes clipboard-assisted actions", async ({ page }) 
   await page.goto("/");
   await page.getByRole("button", { name: "Capture HUD" }).click();
   await expect(page.getByRole("heading", { name: "Capture HUD" })).toBeVisible();
+  await expect(page.getByText("Shortcut: Ctrl+Alt+K")).toBeVisible();
   await expect(page.getByRole("button", { name: "Capture clipboard" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Humanize captured text" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Copy result" })).toBeVisible();

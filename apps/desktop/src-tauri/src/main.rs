@@ -1,6 +1,7 @@
 mod capture;
 mod commands;
 mod ollama;
+mod shortcut;
 mod startup;
 mod store;
 mod tray;
@@ -9,6 +10,7 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             tray::configure_tray(app.handle())?;
+            shortcut::register_capture_shortcut(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -40,6 +40,7 @@ import { useDesktopStore, type DesktopView } from "./store";
 
 const grammar = new HarperEngine();
 const detector = new HeuristicDetector();
+const captureShortcut = "Ctrl+Alt+K";
 const nav: Array<{ view: DesktopView; label: string }> = [
   { view: "editor", label: "Editor" },
   { view: "humanize", label: "Humanize" },
@@ -199,7 +200,9 @@ function HumanizeWorkspace() {
 function CaptureHud() {
   const [original, setOriginal] = useState("");
   const [rewritten, setRewritten] = useState("");
-  const [status, setStatus] = useState("Clipboard-assisted fallback. Global shortcut integration is pending.");
+  const [status, setStatus] = useState(
+    `Use ${captureShortcut} or the tray to open this HUD. Clipboard-assisted capture and paste stay local.`
+  );
 
   async function captureClipboard() {
     const captured = await captureNativeSelection();
@@ -232,6 +235,7 @@ function CaptureHud() {
     <section className="desktop-panel k-stack">
       <h2>Capture HUD</h2>
       <PrivacyBadge tier="noai" />
+      <p className="k-muted">Shortcut: {captureShortcut}</p>
       <div className="desktop-workspace">
         <label className="k-field">
           <span className="k-label">Captured text</span>
