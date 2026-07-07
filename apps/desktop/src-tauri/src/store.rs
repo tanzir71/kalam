@@ -2,6 +2,7 @@ use crate::commands::{HistoryRow, SettingsPayload};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 
 const REDACTED_SECRET: &str = "[stored-outside-settings]";
 const LEGACY_REDACTED_SECRET: &str = "[stored-in-keychain]";
@@ -50,15 +51,19 @@ pub fn settings_set(payload: SettingsPayload) -> SettingsPayload {
 }
 
 pub fn history_query() -> Vec<HistoryRow> {
-    read_json(history_path()).unwrap_or_default()
+    history_query_sqlite().unwrap_or_else(|| read_json(history_json_path()).unwrap_or_default())
 }
 
 pub fn history_add(row: HistoryRow) -> Vec<HistoryRow> {
+    if history_add_sqlite(&row).is_some() {
+        return history_query_sqlite().unwrap_or_default();
+    }
+
     let mut history = history_query();
     history.retain(|item| item.id != row.id);
     history.insert(0, row);
     history.truncate(100);
-    let _ = write_json(history_path(), &history);
+    let _ = write_json(history_json_path(), &history);
     history
 }
 
@@ -91,8 +96,73 @@ fn secret_path() -> PathBuf {
     data_dir().join("secrets.local.json")
 }
 
-fn history_path() -> PathBuf {
+fn history_json_path() -> PathBuf {
     data_dir().join("history.json")
+}
+
+fn history_sqlite_path() -> PathBuf {
+    data_dir().join("history.sqlite3")
+}
+
+fn history_add_sqlite(row: &HistoryRow) -> Option<()> {
+    let sql = format!(
+        "{schema}
+         INSERT INTO history (id, original, rewritten, created_at)
+         VALUES ({id}, {original}, {rewritten}, {created_at})
+         ON CONFLICT(id) DO UPDATE SET
+           original=excluded.original,
+           rewritten=excluded.rewritten,
+           created_at=excluded.created_at;",
+        schema = history_schema_sql(),
+        id = sql_string(&row.id),
+        original = sql_string(&row.original),
+        rewritten = sql_string(&row.rewritten),
+        created_at = row.created_at
+    );
+    run_sqlite(&sql).map(|_| ())
+}
+
+fn history_query_sqlite() -> Option<Vec<HistoryRow>> {
+    let sql = format!(
+        "{schema}
+         SELECT id, original, rewritten, created_at
+         FROM history
+         ORDER BY created_at DESC
+         LIMIT 100;",
+        schema = history_schema_sql()
+    );
+    let raw = run_sqlite(&sql)?;
+    serde_json::from_str(&raw).ok()
+}
+
+fn run_sqlite(sql: &str) -> Option<String> {
+    let path = history_sqlite_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).ok()?;
+    }
+    let output = Command::new("sqlite3")
+        .arg("-json")
+        .arg(path)
+        .arg(sql)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    String::from_utf8(output.stdout).ok()
+}
+
+fn history_schema_sql() -> &'static str {
+    "CREATE TABLE IF NOT EXISTS history (
+       id TEXT PRIMARY KEY NOT NULL,
+       original TEXT NOT NULL,
+       rewritten TEXT NOT NULL,
+       created_at INTEGER NOT NULL
+     );"
+}
+
+fn sql_string(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
 }
 
 fn data_dir() -> PathBuf {
@@ -168,7 +238,7 @@ mod tests {
 
     #[test]
     fn history_add_persists_latest_items_first() {
-        with_test_data_dir(|_dir| {
+        with_test_data_dir(|dir| {
             let first = HistoryRow {
                 id: "one".to_string(),
                 original: "Original".to_string(),
@@ -190,11 +260,15 @@ mod tests {
             assert_eq!(history[0].id, "two");
             assert_eq!(loaded[0].rewritten, "Rewritten 2");
             assert_eq!(loaded[1].rewritten, "Rewritten");
+            assert!(dir.join("history.sqlite3").exists());
+            assert!(!dir.join("history.json").exists());
         });
     }
 
     fn with_test_data_dir(run: impl FnOnce(PathBuf)) {
-        let _guard = TEST_ENV_LOCK.lock().expect("test env lock");
+        let _guard = TEST_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let dir = std::env::temp_dir().join(format!(
             "kalam-store-test-{}",
             SystemTime::now()
