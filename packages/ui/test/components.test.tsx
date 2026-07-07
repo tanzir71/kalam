@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { colors, darkColors, HumanizePanel, PrivacyBadge, UiGallery } from "../src";
 
 describe("@kalam/ui", () => {
@@ -43,6 +45,14 @@ describe("@kalam/ui", () => {
     for (const [foreground, background] of pairs) {
       expect(contrastRatio(foreground, background), `${foreground} on ${background}`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it("includes motion, focus, and touch-target accessibility CSS", () => {
+    const css = readFileSync(resolve(__dirname, "../src/styles.css"), "utf8");
+    expect(css).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(css).toContain(":focus-visible");
+    expect(css).toContain("@media (pointer: coarse)");
+    expect(css).toContain("min-height: 44px");
   });
 });
 

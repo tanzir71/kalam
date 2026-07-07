@@ -328,3 +328,19 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+@media (pointer: coarse) {
+  .k-button,
+  .k-icon-button,
+  .k-input,
+  .k-select,
+  .k-chip,
+  .k-segmented button {
+    min-height: 44px;
+  }
+
+  .k-icon-button {
+    height: 44px;
+    width: 44px;
+  }
+}

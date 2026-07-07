@@ -1,7 +1,7 @@
 # Kalam - Loop Progress
 
 Current milestone: M7/M8 hardening audit
-Loop iteration: 8
+Loop iteration: 9
 
 ## Milestones
 - [x] M0 Repo & tooling skeleton
@@ -26,6 +26,7 @@ Loop iteration: 8
 - [x] Replace static desktop capture/paste placeholders with clipboard-assisted PowerShell fallbacks and test isolation
 - [x] Add automated WCAG AA contrast checks for semantic UI text tokens and adjust the light subtle-text token
 - [x] Replace queued Ollama pull placeholder with real `/api/pull` progress parsing and Model Manager pull controls
+- [x] Add automated focus/reduced-motion/touch-target checks and coarse-pointer 44px target CSS
 - [ ] Implement real global shortcut/capture/paste integration beyond clipboard-safe fallbacks
 - [ ] Complete the M8 accessibility and full component-state gallery audit
 
@@ -39,6 +40,7 @@ Loop iteration: 8
 - 2026-07-07 iter 6: Added UI token WCAG AA contrast tests and darkened the light `textSubtle` token to pass 4.5:1. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm e2e:ext` PASS.
 - 2026-07-07 iter 7: Replaced desktop API key file storage on Windows with Credential Manager (`CredWriteW`/`CredReadW`/`CredDeleteW`) while retaining the file fallback for unsupported platforms or keychain failures. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
 - 2026-07-07 iter 8: Replaced the desktop Ollama pull placeholder with a real `/api/pull` request, streaming progress parser, native command result, and Model Manager pull controls. Verification: `pnpm --filter @kalam/desktop test` PASS, `pnpm --filter @kalam/desktop build` PASS, `pnpm --filter @kalam/desktop lint` PASS, `pnpm --filter @kalam/desktop typecheck` PASS, `pnpm e2e:desktop` PASS, `pnpm --filter @kalam/desktop tauri build` PASS.
+- 2026-07-07 iter 9: Added automated UI CSS checks for reduced motion, focus-visible, and coarse-pointer touch target sizing; added 44px touch targets under `@media (pointer: coarse)`. Verification: `pnpm --filter @kalam/ui test` PASS, `pnpm --filter @kalam/ui build` PASS, `pnpm --filter @kalam/ui lint` PASS, `pnpm --filter @kalam/ui typecheck` PASS, `pnpm --filter @kalam/extension build` PASS, `pnpm e2e:ext` PASS.
 
 ## BLOCKERS
 - Global shortcut and hardened capture/paste beyond clipboard-assisted fallbacks are still implemented with local-first workarounds rather than the final Tauri plugin integrations required by the full spec.
