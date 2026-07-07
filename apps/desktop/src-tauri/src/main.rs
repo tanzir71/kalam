@@ -2,9 +2,14 @@ mod capture;
 mod commands;
 mod ollama;
 mod store;
+mod tray;
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            tray::configure_tray(app.handle())?;
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             commands::capture_selection,
             commands::paste_text,

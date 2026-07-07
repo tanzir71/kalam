@@ -26,6 +26,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   captureNativeSelection,
   listNativeModels,
+  listenForNativeCaptureHud,
   loadDesktopSettings,
   pasteNativeText,
   pullNativeModel,
@@ -52,6 +53,8 @@ export function App() {
   useEffect(() => {
     hydrateHistory();
   }, [hydrateHistory]);
+
+  useEffect(() => listenForNativeCaptureHud(() => setView("hud")), [setView]);
 
   return (
     <main className="k-root desktop-shell">

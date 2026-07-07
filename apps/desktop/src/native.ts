@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import type { HistoryItem } from "./store";
 
 interface NativeSettingsPayload {
@@ -120,6 +121,19 @@ export async function pasteNativeText(text: string): Promise<string> {
     // Clipboard access may be unavailable in browser smoke tests.
   }
   return text;
+}
+
+export function listenForNativeCaptureHud(callback: () => void): () => void {
+  if (!isTauriRuntime()) return () => {};
+
+  let unlisten: (() => void) | undefined;
+  void listen("kalam://open-hud", callback).then((release) => {
+    unlisten = release;
+  });
+
+  return () => {
+    unlisten?.();
+  };
 }
 
 async function invokeIfAvailable<T>(command: string, args?: Record<string, unknown>): Promise<T | undefined> {
