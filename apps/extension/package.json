@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "pnpm build:chrome && pnpm build:firefox",
-    "build:chrome": "vite build --mode chrome",
-    "build:firefox": "vite build --mode firefox",
+    "build": "pnpm --filter @kalam/ui build && pnpm build:chrome && pnpm build:firefox",
+    "build:chrome": "vite build --mode chrome && node scripts/render-static-gallery.mjs chrome",
+    "build:firefox": "vite build --mode firefox && node scripts/render-static-gallery.mjs firefox",
     "test": "vitest run",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json"
