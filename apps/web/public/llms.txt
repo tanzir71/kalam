@@ -1,0 +1,43 @@
+# Kalam
+
+Kalam is a local-first writing assistant for Chrome, Firefox, and Windows desktop.
+It provides deterministic grammar, spelling, style, readability, rewrite, and Humanize behavior from a shared TypeScript package.
+
+Website and live rules demo: https://kalam-write.vercel.app/
+Source: https://github.com/tanzir71/kalam
+License: MIT
+
+## Privacy ladder
+
+1. No-AI (default): RuleAdapter and HarperEngine run on the device. No account, model, API key, or server is required.
+2. Local AI (optional): connect Ollama or LM Studio running on the user's hardware.
+3. BYO cloud (explicit opt-in): requires both a user-provided OpenAI/Anthropic key and cloud.enabled=true.
+
+Every transformation should display its tier: noai, local, or cloud. Never silently fall from a local tier into cloud. If no model is available, fall back to RuleAdapter.
+
+## Install and verify
+
+git clone https://github.com/tanzir71/kalam
+cd kalam
+pnpm install
+pnpm -r build
+pnpm -r test
+pnpm -r lint
+pnpm -r typecheck
+
+Node 22+ and pnpm 10+ are required. Rust is required only to package the Tauri desktop app.
+
+## Core API
+
+Package: @kalam/core
+
+- new HarperEngine().check(text): deterministic grammar/style Issue[]
+- analyzeText(text): words, characters, sentences, grade, vocabulary ratio, burstiness
+- rewrite(new RuleAdapter(), { text, goal }): deterministic rewrite with diff and noai tier
+- humanize({ llm: new RuleAdapter(), detector: new HeuristicDetector() }, text, options): local rule-based Humanize result
+- meaningPreserved(before, after): token overlap, length ratio, number preservation, and entity preservation
+- new HeuristicDetector().score(text): local heuristic score; not a guarantee of detector outcomes
+
+## Honest scope
+
+Rule mode is deterministic and does not claim GPT-level contextual rewriting. Local models need the user's own hardware. Cloud mode needs the user's own key and explicit enablement. The desktop app currently targets Windows; the extension targets Chrome and Firefox.

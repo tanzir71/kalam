@@ -1,5 +1,7 @@
 # Kalam
 
+**Website & live rules demo:** https://kalam-write.vercel.app/
+
 Kalam is a local-first writing assistant with a shared TypeScript core, browser extension, and Tauri desktop app.
 
 Tagline: **Write clearly. Sound human.**
